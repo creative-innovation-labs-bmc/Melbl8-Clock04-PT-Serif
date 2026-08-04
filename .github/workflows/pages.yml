@@ -20,67 +20,11 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out typography fork
-        uses: actions/checkout@v4
-
-      - name: Build pinned clock variant
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          SOURCE_REPO="https://github.com/creative-innovation-labs-bmc/Melbl8-Clock04-Typewriter.git"
-          SOURCE_COMMIT="903ad6b4939817b1743ba908f17b9fad609bcdb6"
-
-          git clone --filter=blob:none --no-checkout "$SOURCE_REPO" source-clock
-          git -C source-clock fetch --depth 1 origin "$SOURCE_COMMIT"
-          git -C source-clock checkout --detach "$SOURCE_COMMIT"
-
-          mkdir -p _site
-          rsync -a \
-            --exclude '.git' \
-            --exclude '.github' \
-            --exclude '_site' \
-            --exclude 'font' \
-            --exclude 'tests' \
-            --exclude 'test' \
-            source-clock/ _site/
-
-          cp index.html _site/index.html
-          cp typography.css _site/typography.css
-          cp robots.txt _site/robots.txt
-
-          python3 - <<'PY'
-          from pathlib import Path
-
-          app_path = Path('_site/app.js')
-          app = app_path.read_text(encoding='utf-8')
-          old = "const singleLayout = params.get('layout') === 'single';"
-          new = "const singleLayout = true;"
-          if old not in app:
-              raise SystemExit('Could not force single-line mode in app.js')
-          app_path.write_text(app.replace(old, new, 1), encoding='utf-8')
-
-          controller_path = Path('_site/single-line-controller.js')
-          controller = controller_path.read_text(encoding='utf-8')
-          old = "if (params.get('layout') === 'single') {"
-          new = "if (true) {"
-          if old not in controller:
-              raise SystemExit('Could not force single-line controller')
-          controller_path.write_text(controller.replace(old, new, 1), encoding='utf-8')
-          PY
-
-          test -s _site/index.html
-          test -s _site/app.js
-          test -s _site/single-line-controller.js
-          test -s _site/typography.css
-
+      - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
-
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
-
+          path: .
       - id: deployment
         uses: actions/deploy-pages@v4
