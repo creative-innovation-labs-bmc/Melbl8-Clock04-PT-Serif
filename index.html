@@ -2,13 +2,69 @@
 <html lang="en-AU">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow, noarchive">
-  <title>Melbl8-Clock04-PT-Serif</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+  <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+  <meta name="theme-color" content="#373A36">
+  <meta name="referrer" content="no-referrer">
+  <title>Melbourne Typewriter Clock — PT Serif</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=PT+Serif:wght@700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="single-line-colours.css">
+  <link rel="stylesheet" href="typography.css?v=20260804-pt1">
 </head>
-<body>
-  <main><h1>Melbl8-Clock04-PT-Serif</h1><p>A 3840 × 804 Melbourne natural-language typewriter clock using PT Serif and Open Sans, optimised for Enplug and NVIDIA Shield signage.</p><p>Starter created. The full implementation is next.</p></main>
-  <script src="app.js"></script>
+<body class="layout-single">
+  <main id="viewport" aria-label="Melbourne natural-language clock">
+    <section id="stage" aria-label="The current time in Melbourne">
+      <div class="safe-area" aria-hidden="true"></div>
+
+      <div id="messageFrame" class="message-frame">
+        <div id="leadLine" class="message-line lead-line" aria-hidden="true">
+          <span id="leadBeforeCursor"></span><span id="leadCursor" class="cursor" hidden></span><span id="leadAfterCursor"></span>
+        </div>
+
+        <div id="timeLine" class="message-line time-line" role="timer" aria-live="polite" aria-atomic="true">
+          <span id="timeBeforeCursor"></span><span id="timeCursor" class="cursor" aria-hidden="true" hidden></span><span id="timeAfterCursor"></span>
+        </div>
+
+        <div id="singleLine" class="message-line single-line" role="timer" aria-live="polite" aria-atomic="true" hidden>
+          <span id="singleBeforeCursor"></span><span id="singleCursor" class="cursor" aria-hidden="true" hidden></span><span id="singleAfterCursor"></span>
+        </div>
+
+        <div id="messageMeasure" class="message-line message-measure" aria-hidden="true"></div>
+      </div>
+
+      <footer class="footer-row">
+        <div class="location-block">
+          <span class="location">Melbourne</span>
+          <span class="separator" aria-hidden="true">·</span>
+          <span id="dateLabel" class="date-label"></span>
+        </div>
+        <div class="status-block">
+          <span id="modeLabel" class="mode-label" hidden>Demo</span>
+          <span id="statusLabel" class="status-label">Live</span>
+        </div>
+      </footer>
+
+      <div class="progress-track" aria-hidden="true">
+        <div id="progressFill" class="progress-fill"></div>
+      </div>
+    </section>
+
+    <div id="rotatePrompt" class="rotate-prompt" hidden>
+      <div class="rotate-icon" aria-hidden="true">↻</div>
+      <p>Rotate your phone for the full gallery preview</p>
+    </div>
+  </main>
+
+  <script type="module">
+    await document.fonts.ready;
+    await import('./single-line-controller.js?v=20260804-pt1');
+    await import('./app.js?v=20260804-pt1');
+  </script>
 </body>
 </html>
