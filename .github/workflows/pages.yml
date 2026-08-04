@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -22,9 +22,51 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Vendor official Google Fonts files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          FONT_SOURCE_COMMIT="2796410152d4f9524b68ed46e69c1b60f8e0f7c3"
+          BASE_URL="https://raw.githubusercontent.com/google/fonts/${FONT_SOURCE_COMMIT}/ofl"
+
+          mkdir -p assets/fonts
+
+          curl --fail --location --retry 3 \
+            "${BASE_URL}/ptserif/PT_Serif-Web-Bold.ttf" \
+            --output assets/fonts/PT_Serif-Web-Bold.ttf
+
+          curl --fail --location --retry 3 \
+            "${BASE_URL}/opensans/OpenSans%5Bwdth%2Cwght%5D.ttf" \
+            --output assets/fonts/OpenSans-Variable.ttf
+
+          curl --fail --location --retry 3 \
+            "${BASE_URL}/ptserif/OFL.txt" \
+            --output assets/fonts/OFL-PT-Serif.txt
+
+          curl --fail --location --retry 3 \
+            "${BASE_URL}/opensans/OFL.txt" \
+            --output assets/fonts/OFL-Open-Sans.txt
+
+          test "$(stat -c%s assets/fonts/PT_Serif-Web-Bold.ttf)" -gt 50000
+          test "$(stat -c%s assets/fonts/OpenSans-Variable.ttf)" -gt 100000
+          test -s assets/fonts/OFL-PT-Serif.txt
+          test -s assets/fonts/OFL-Open-Sans.txt
+
+          if [[ -n "$(git status --porcelain -- assets/fonts)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add assets/fonts
+            git commit -m "Vendor PT Serif and Open Sans font files"
+            git push
+          fi
+
       - uses: actions/configure-pages@v5
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
+
       - id: deployment
         uses: actions/deploy-pages@v4
