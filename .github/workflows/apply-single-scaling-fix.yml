@@ -1,0 +1,186 @@
+name: Apply single scaling engine fix
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/apply-single-scaling-fix.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch clock scaling
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('app.js')
+          source = path.read_text(encoding='utf-8')
+
+          old_measure = '''function measureFontSize(text) {
+            measure.style.fontSize = `${BASE_FONT_SIZE}px`;
+            measure.textContent = text || ' ';
+            const stageScale = stage.getBoundingClientRect().width / STAGE_WIDTH || 1;
+            const textWidth = measure.getBoundingClientRect().width / stageScale;
+            const textWidthPerPixel = textWidth / BASE_FONT_SIZE;
+            const totalWidthPerPixel = textWidthPerPixel + CURSOR_EM_ALLOWANCE;
+            const exactSize = (SAFE_CONTENT_WIDTH - CURSOR_FIXED_WIDTH) / totalWidthPerPixel;
+            return clamp(exactSize, MIN_FONT_SIZE, MAX_FONT_SIZE);
+          }'''
+
+          new_measure = '''function measureFontSize(text) {
+            measure.style.fontSize = `${BASE_FONT_SIZE}px`;
+            measure.textContent = text || ' ';
+
+            // scrollWidth stays in the fixed 3840px coordinate system and is not
+            // affected by the viewport transform used for mobile previews.
+            const textWidth = measure.scrollWidth;
+            const textWidthPerPixel = textWidth / BASE_FONT_SIZE;
+            const totalWidthPerPixel = textWidthPerPixel + CURSOR_EM_ALLOWANCE;
+            const exactSize = (SAFE_CONTENT_WIDTH - CURSOR_FIXED_WIDTH - 2) / totalWidthPerPixel;
+            return clamp(exactSize, MIN_FONT_SIZE, MAX_FONT_SIZE);
+          }'''
+
+          old_transition = '''  for (let index = 0; index < plan.cursorTravelLeft; index += 1) {
+            after = before.slice(-1) + after;
+            before = before.slice(0, -1);
+            render(before, after);
+            await sleep(timings.cursorTravel, token);
+          }
+
+          if (plan.deleteCount > 0) {
+            const duration = clamp(Math.max(300, (plan.deleteCount - 1) * timings.delete), 300, 900);
+            applyFontSize(targetSize, duration, 'linear', 'delete');
+          } else {
+            applyFontSize(targetSize, 320, 'cubic-bezier(0.2, 0.72, 0.2, 1)', 'insert');
+          }
+
+          for (let index = 0; index < plan.deleteCount; index += 1) {
+            before = before.slice(0, -1);
+            render(before, after);
+            await sleep(timings.delete, token);
+          }
+
+          for (const character of plan.targetMiddle) {
+            before += character;
+            render(before, after);
+            await sleep(timings.type, token);
+          }
+
+          while (after.length > 0) {
+            before += after[0];
+            after = after.slice(1);
+            render(before, after);
+            await sleep(timings.cursorTravel, token);
+          }
+
+          renderedText = target;
+          render(target, '');
+          applyFontSize(targetSize, 0, 'linear', 'finish');
+          await sleep(timings.settle, token);
+          setCursorWorking(false);'''
+
+          new_transition = '''  const startingSize = Number.parseFloat(getComputedStyle(line).fontSize) || targetSize;
+          const growing = targetSize > startingSize + 0.25;
+          const easing = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+
+          const resizeTowardTarget = (reason) => {
+            const safeSize = measureFontSize(before + after);
+            const desiredSize = growing ? Math.min(targetSize, safeSize) : targetSize;
+            const currentSize = Number.parseFloat(getComputedStyle(line).fontSize) || startingSize;
+
+            if (Math.abs(currentSize - desiredSize) > 0.25) {
+              applyFontSize(desiredSize, 180, easing, reason);
+            }
+          };
+
+          for (let index = 0; index < plan.cursorTravelLeft; index += 1) {
+            after = before.slice(-1) + after;
+            before = before.slice(0, -1);
+            render(before, after);
+            await sleep(timings.cursorTravel, token);
+          }
+
+          // Shrinking is always safe, so begin it with the outgoing sentence.
+          // Growing waits until deletion creates enough room, preventing a large
+          // temporary word from expanding beyond the final sentence's size.
+          if (!growing) {
+            applyFontSize(targetSize, 420, easing, 'transition-shrink');
+          }
+
+          for (let index = 0; index < plan.deleteCount; index += 1) {
+            before = before.slice(0, -1);
+            render(before, after);
+            if (growing) resizeTowardTarget('transition-delete');
+            await sleep(timings.delete, token);
+          }
+
+          // At the end of deletion the complete incoming target size is safe.
+          // It now settles while the new sentence types in.
+          if (growing) resizeTowardTarget('transition-type-in');
+
+          for (const character of plan.targetMiddle) {
+            before += character;
+            render(before, after);
+            await sleep(timings.type, token);
+          }
+
+          while (after.length > 0) {
+            before += after[0];
+            after = after.slice(1);
+            render(before, after);
+            await sleep(timings.cursorTravel, token);
+          }
+
+          renderedText = target;
+          render(target, '');
+          await sleep(timings.settle, token);
+          setCursorWorking(false);'''
+
+          old_fonts = '''await document.fonts.ready;
+          scaleStage();'''
+
+          new_fonts = '''await Promise.allSettled([
+            document.fonts.load('700 220px "PT Serif Local"'),
+            document.fonts.load('400 31px "Open Sans Local"'),
+            document.fonts.load('600 31px "Open Sans Local"')
+          ]);
+          await document.fonts.ready;
+          scaleStage();'''
+
+          replacements = [
+            (old_measure, new_measure, 'measurement block'),
+            (old_transition, new_transition, 'transition block'),
+            (old_fonts, new_fonts, 'font preload block'),
+          ]
+
+          for old, new, label in replacements:
+            if old not in source:
+              raise SystemExit(f'Missing expected {label}')
+            source = source.replace(old, new, 1)
+
+          path.write_text(source, encoding='utf-8')
+          PY
+
+      - name: Commit patched engine
+        shell: bash
+        run: |
+          if git diff --quiet -- app.js; then
+            echo "No app.js changes required"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js
+          git commit -m "Fix scaling within type transition"
+          git push
