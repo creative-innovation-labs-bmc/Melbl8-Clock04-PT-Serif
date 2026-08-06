@@ -1,0 +1,15 @@
+{
+  "source": "Bureau of Meteorology",
+  "station": "Melbourne (Olympic Park)",
+  "station_id": "95936",
+  "office": "850 Collins Street, Docklands, Melbourne",
+  "observed_at": null,
+  "temperature_c": null,
+  "apparent_temperature_c": null,
+  "wind_direction": null,
+  "wind_speed_kmh": null,
+  "gust_kmh": null,
+  "humidity_pct": null,
+  "rain_since_9am_mm": null,
+  "status": "pending"
+}
