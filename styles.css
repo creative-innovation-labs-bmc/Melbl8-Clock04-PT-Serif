@@ -68,57 +68,28 @@ body {
   contain: layout paint style;
 }
 
-.weather-block {
+.top-status {
   position: absolute;
   top: 48px;
   right: var(--safe-x);
   z-index: 2;
   display: flex;
   align-items: baseline;
-  justify-content: flex-end;
-  gap: 18px;
-  max-width: calc(100% - (2 * var(--safe-x)));
+  gap: 28px;
   white-space: nowrap;
-  font-family: "Open Sans Local", "Open Sans", Arial, Helvetica, sans-serif;
-  font-variant-numeric: tabular-nums lining-nums;
-  text-transform: uppercase;
   pointer-events: none;
+  font-family: "Open Sans Local", "Open Sans", Arial, Helvetica, sans-serif;
 }
 
-.weather-location {
-  color: var(--muted);
-  font-size: 24px;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0.105em;
-}
-
-.weather-temperature {
-  color: var(--text);
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: -0.025em;
-}
-
-.weather-divider {
-  color: var(--accent);
+.mode-label,
+.status-label {
   font-size: 31px;
-  font-weight: 600;
   line-height: 1;
-}
-
-.weather-wind {
   color: var(--muted);
-  font-size: 27px;
   font-weight: 400;
-  line-height: 1;
-  letter-spacing: 0.025em;
 }
 
-.weather-block.is-stale {
-  opacity: 0.48;
-}
+.mode-label { color: var(--accent); }
 
 .message-frame {
   position: absolute;
@@ -194,19 +165,38 @@ body {
 }
 
 .location-block,
-.status-block,
-.mode-label,
-.status-label {
+.weather-block {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+  white-space: nowrap;
   font-size: 31px;
   line-height: 1;
   color: var(--muted);
   font-weight: 400;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
-.location { color: var(--text); font-weight: 600; }
-.separator { display: inline-block; margin: 0 22px; color: var(--accent); }
-.status-block { display: flex; align-items: baseline; gap: 28px; }
-.mode-label { color: var(--accent); }
+.location,
+.weather-location {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.date-label,
+.weather-temperature,
+.weather-wind {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.separator {
+  display: inline-block;
+  margin: 0 22px;
+  color: var(--accent);
+}
+
+.weather-block.is-stale { opacity: 0.48; }
 
 .progress-track {
   position: absolute;
