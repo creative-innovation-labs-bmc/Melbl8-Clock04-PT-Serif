@@ -12,12 +12,19 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=PT+Serif:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260805-scale7">
+  <link rel="stylesheet" href="styles.css?v=20260806-weather1">
 </head>
 <body>
   <main id="viewport" aria-label="Melbourne natural-language clock">
-    <section id="stage" aria-label="The current time in Melbourne">
+    <section id="stage" aria-label="The current time and weather in Melbourne">
       <div id="safeArea" class="safe-area" aria-hidden="true"></div>
+
+      <header id="weatherBlock" class="weather-block" aria-label="Live weather for the Aurecon office in Docklands">
+        <span class="weather-location">Docklands</span>
+        <span id="weatherTemperature" class="weather-temperature">--.-°C</span>
+        <span class="weather-divider" aria-hidden="true">·</span>
+        <span id="weatherWind" class="weather-wind">BOM weather</span>
+      </header>
 
       <div id="messageFrame" class="message-frame">
         <div id="singleLine" class="message-line" role="timer" aria-live="polite" aria-atomic="true">
@@ -49,6 +56,7 @@
     </div>
   </main>
 
-  <script type="module" src="app-v2.js?v=20260805-scale7"></script>
+  <script type="module" src="app-v2.js?v=20260806-weather1"></script>
+  <script type="module" src="weather.js?v=20260806-weather1"></script>
 </body>
 </html>
