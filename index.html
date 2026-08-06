@@ -12,18 +12,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=PT+Serif:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260806-weather2">
+  <link rel="stylesheet" href="styles.css?v=20260806-weather3">
 </head>
 <body>
   <main id="viewport" aria-label="Melbourne natural-language clock">
     <section id="stage" aria-label="The current time and weather in Melbourne">
       <div id="safeArea" class="safe-area" aria-hidden="true"></div>
 
-      <header id="weatherBlock" class="weather-block" aria-label="Live weather for the Aurecon office in Docklands">
-        <span class="weather-location">Docklands</span>
-        <span id="weatherTemperature" class="weather-temperature">--.-°C</span>
-        <span class="weather-divider" aria-hidden="true">·</span>
-        <span id="weatherWind" class="weather-wind">BOM weather</span>
+      <header class="top-status" aria-label="Clock status">
+        <span id="modeLabel" class="mode-label" hidden>Demo</span>
+        <span id="statusLabel" class="status-label">Live</span>
       </header>
 
       <div id="messageFrame" class="message-frame">
@@ -39,9 +37,13 @@
           <span class="separator" aria-hidden="true">·</span>
           <span id="dateLabel" class="date-label"></span>
         </div>
-        <div class="status-block">
-          <span id="modeLabel" class="mode-label" hidden>Demo</span>
-          <span id="statusLabel" class="status-label">Live</span>
+
+        <div id="weatherBlock" class="weather-block" aria-label="Live weather for the Aurecon office in Docklands">
+          <span class="weather-location">Docklands</span>
+          <span class="separator" aria-hidden="true">·</span>
+          <span id="weatherTemperature" class="weather-temperature">--.-°C</span>
+          <span class="separator" aria-hidden="true">·</span>
+          <span id="weatherWind" class="weather-wind">BOM weather</span>
         </div>
       </footer>
 
@@ -56,7 +58,7 @@
     </div>
   </main>
 
-  <script type="module" src="app-v2.js?v=20260806-weather2"></script>
-  <script type="module" src="weather.js?v=20260806-weather2"></script>
+  <script type="module" src="app-v2.js?v=20260806-weather3"></script>
+  <script type="module" src="weather.js?v=20260806-weather3"></script>
 </body>
 </html>
