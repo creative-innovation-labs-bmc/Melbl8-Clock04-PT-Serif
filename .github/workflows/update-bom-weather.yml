@@ -1,0 +1,138 @@
+name: Update BOM Docklands weather
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/update-bom-weather.yml"
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bom-weather-cache
+  cancel-in-progress: true
+
+jobs:
+  update-weather:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch latest BOM observation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from datetime import datetime, timezone
+          from pathlib import Path
+          import json
+          import time
+          import urllib.request
+
+          URL = "https://www.bom.gov.au/fwo/IDV60901/IDV60901.95936.json"
+          OUTPUT = Path("weather.json")
+
+          request = urllib.request.Request(
+              URL,
+              headers={
+                  "User-Agent": "Mozilla/5.0 (compatible; Aurecon Docklands gallery weather clock/1.0)",
+                  "Accept": "application/json"
+              },
+          )
+
+          last_error = None
+          document = None
+          for attempt in range(3):
+              try:
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      document = json.load(response)
+                  break
+              except Exception as error:
+                  last_error = error
+                  if attempt < 2:
+                      time.sleep(5 * (attempt + 1))
+
+          if document is None:
+              raise SystemExit(f"Unable to retrieve BOM observation: {last_error}")
+
+          observations = document.get("observations", {}).get("data", [])
+          if not observations:
+              raise SystemExit("BOM response did not contain observation data")
+
+          observation = observations[0]
+
+          def number(value):
+              if value in (None, "", "-"):
+                  return None
+              try:
+                  return float(value)
+              except (TypeError, ValueError):
+                  return None
+
+          observed_raw = str(observation.get("aifstime_utc") or "")
+          observed_at = None
+          if len(observed_raw) == 14:
+              observed_at = (
+                  datetime.strptime(observed_raw, "%Y%m%d%H%M%S")
+                  .replace(tzinfo=timezone.utc)
+                  .isoformat()
+                  .replace("+00:00", "Z")
+              )
+
+          wind_speed = number(observation.get("wind_spd_kmh"))
+          wind_direction = observation.get("wind_dir")
+          if wind_direction in (None, "", "-"):
+              wind_direction = "CALM" if wind_speed == 0 else None
+
+          payload = {
+              "source": "Bureau of Meteorology",
+              "source_url": URL,
+              "station": observation.get("name") or "Melbourne (Olympic Park)",
+              "station_id": str(observation.get("wmo") or "95936"),
+              "office": "850 Collins Street, Docklands, Melbourne",
+              "observed_at": observed_at,
+              "temperature_c": number(observation.get("air_temp")),
+              "apparent_temperature_c": number(observation.get("apparent_t")),
+              "wind_direction": wind_direction,
+              "wind_speed_kmh": wind_speed,
+              "gust_kmh": number(observation.get("gust_kmh")),
+              "humidity_pct": number(observation.get("rel_hum")),
+              "rain_since_9am_mm": number(observation.get("rain_trace")),
+              "status": "live"
+          }
+
+          if payload["temperature_c"] is None or payload["observed_at"] is None:
+              raise SystemExit("BOM observation was missing required temperature or timestamp")
+
+          existing = None
+          if OUTPUT.exists():
+              try:
+                  existing = json.loads(OUTPUT.read_text(encoding="utf-8"))
+              except Exception:
+                  existing = None
+
+          if existing == payload:
+              print("BOM observation is unchanged")
+          else:
+              OUTPUT.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+              print(json.dumps(payload, indent=2))
+          PY
+
+      - name: Commit weather cache
+        shell: bash
+        run: |
+          if git diff --quiet -- weather.json; then
+            echo "No new BOM observation to commit"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add weather.json
+          git commit -m "Update BOM Docklands weather"
+          git push
