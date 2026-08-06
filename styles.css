@@ -68,6 +68,58 @@ body {
   contain: layout paint style;
 }
 
+.weather-block {
+  position: absolute;
+  top: 48px;
+  right: var(--safe-x);
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 18px;
+  max-width: calc(100% - (2 * var(--safe-x)));
+  white-space: nowrap;
+  font-family: "Open Sans Local", "Open Sans", Arial, Helvetica, sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.weather-location {
+  color: var(--muted);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.105em;
+}
+
+.weather-temperature {
+  color: var(--text);
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+
+.weather-divider {
+  color: var(--accent);
+  font-size: 31px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.weather-wind {
+  color: var(--muted);
+  font-size: 27px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.025em;
+}
+
+.weather-block.is-stale {
+  opacity: 0.48;
+}
+
 .message-frame {
   position: absolute;
   left: var(--safe-x);
