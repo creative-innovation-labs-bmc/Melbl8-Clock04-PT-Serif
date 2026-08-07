@@ -4,13 +4,13 @@
   "station": "Melbourne (Olympic Park)",
   "station_id": "95936",
   "office": "850 Collins Street, Docklands, Melbourne",
-  "observed_at": "2026-08-07T21:00:00Z",
-  "temperature_c": 10.7,
-  "apparent_temperature_c": 7.9,
+  "observed_at": "2026-08-07T22:00:00Z",
+  "temperature_c": 10.4,
+  "apparent_temperature_c": 7.6,
   "wind_direction": "NNE",
   "wind_speed_kmh": 11.0,
-  "gust_kmh": 19.0,
-  "humidity_pct": 77.0,
+  "gust_kmh": 15.0,
+  "humidity_pct": 79.0,
   "rain_since_9am_mm": 0.0,
   "status": "live"
 }
