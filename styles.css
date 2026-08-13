@@ -42,7 +42,7 @@ body {
 
 body {
   color: var(--text);
-  font-family: "Open Sans Local", "Open Sans", Arial, Helvetica, sans-serif;
+  font-family: "Open Sans Local";
   font-weight: 400;
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
@@ -78,7 +78,7 @@ body {
   gap: 28px;
   white-space: nowrap;
   pointer-events: none;
-  font-family: "Open Sans Local", "Open Sans", Arial, Helvetica, sans-serif;
+  font-family: "Open Sans Local";
 }
 
 .mode-label,
@@ -110,7 +110,7 @@ body {
   max-width: 100%;
   white-space: pre;
   color: var(--text);
-  font-family: "PT Serif Local", "PT Serif", Georgia, "Times New Roman", serif;
+  font-family: "PT Serif Local";
   font-size: var(--message-font-size);
   font-weight: 700;
   line-height: 0.94;
@@ -161,7 +161,7 @@ body {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  font-family: "Open Sans Local", "Open Sans", Arial, Helvetica, sans-serif;
+  font-family: "Open Sans Local";
 }
 
 .location-block,
@@ -234,7 +234,7 @@ body.debug #stage::after {
   padding: 8px 12px;
   border: 1px solid rgba(244, 242, 234, 0.28);
   color: rgba(244, 242, 234, 0.72);
-  font: 400 20px/1 "Open Sans Local", "Open Sans", Arial, sans-serif;
+  font: 400 20px/1 "Open Sans Local";
 }
 
 .rotate-prompt {
@@ -248,7 +248,7 @@ body.debug #stage::after {
   text-align: center;
   background: rgba(23, 24, 23, 0.94);
   color: var(--text);
-  font: 400 18px/1.35 "Open Sans Local", "Open Sans", Arial, sans-serif;
+  font: 400 18px/1.35 "Open Sans Local";
 }
 
 .rotate-prompt[hidden] { display: none; }
