@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -23,44 +23,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Vendor official Google Fonts files
-        shell: bash
+      - name: Verify repository-hosted fonts exist
         run: |
           set -euo pipefail
-
-          FONT_SOURCE_COMMIT="2796410152d4f9524b68ed46e69c1b60f8e0f7c3"
-          BASE_URL="https://raw.githubusercontent.com/google/fonts/${FONT_SOURCE_COMMIT}/ofl"
-
-          mkdir -p assets/fonts
-
-          curl --fail --location --retry 3 \
-            "${BASE_URL}/ptserif/PT_Serif-Web-Bold.ttf" \
-            --output assets/fonts/PT_Serif-Web-Bold.ttf
-
-          curl --fail --location --retry 3 \
-            "${BASE_URL}/opensans/OpenSans%5Bwdth%2Cwght%5D.ttf" \
-            --output assets/fonts/OpenSans-Variable.ttf
-
-          curl --fail --location --retry 3 \
-            "${BASE_URL}/ptserif/OFL.txt" \
-            --output assets/fonts/OFL-PT-Serif.txt
-
-          curl --fail --location --retry 3 \
-            "${BASE_URL}/opensans/OFL.txt" \
-            --output assets/fonts/OFL-Open-Sans.txt
-
           test "$(stat -c%s assets/fonts/PT_Serif-Web-Bold.ttf)" -gt 50000
           test "$(stat -c%s assets/fonts/OpenSans-Variable.ttf)" -gt 100000
-          test -s assets/fonts/OFL-PT-Serif.txt
-          test -s assets/fonts/OFL-Open-Sans.txt
-
-          if [[ -n "$(git status --porcelain -- assets/fonts)" ]]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add assets/fonts
-            git commit -m "Vendor PT Serif and Open Sans font files"
-            git push
-          fi
+          grep -F 'PT Serif Local' styles.css
+          grep -F 'Open Sans Local' styles.css
+          ! grep -F 'fonts.googleapis.com' index.html
+          ! grep -F 'fonts.gstatic.com' index.html
 
       - uses: actions/configure-pages@v5
 
@@ -70,3 +41,22 @@ jobs:
 
       - id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify live page uses local fonts only
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 8 --retry-delay 3 \
+            "$PAGE_URL" -o /tmp/index.html
+          ! grep -F 'fonts.googleapis.com' /tmp/index.html
+          ! grep -F 'fonts.gstatic.com' /tmp/index.html
+          grep -F 'assets/fonts/PT_Serif-Web-Bold.ttf' /tmp/index.html
+          grep -F 'assets/fonts/OpenSans-Variable.ttf' /tmp/index.html
+
+          curl --fail --silent --show-error --location --retry 8 --retry-delay 3 \
+            "${PAGE_URL%/}/assets/fonts/PT_Serif-Web-Bold.ttf" -o /tmp/pt-serif.ttf
+          curl --fail --silent --show-error --location --retry 8 --retry-delay 3 \
+            "${PAGE_URL%/}/assets/fonts/OpenSans-Variable.ttf" -o /tmp/open-sans.ttf
+          test "$(stat -c%s /tmp/pt-serif.ttf)" -gt 50000
+          test "$(stat -c%s /tmp/open-sans.ttf)" -gt 100000
